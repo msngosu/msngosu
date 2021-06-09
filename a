@@ -1,1 +1,110 @@
-a
+/*
+ * All rights reserved.
+ *
+ * This software is the confidential and proprietary information of Global InfoTech Corporation ("Confidential Information").  
+ * You shall not disclose such Confidential Information and shall use
+ * it only in accordance with the terms of the license agreement
+ * you entered into with Global InfoTech.
+ */
+package com.git.batch.cms.basebatch.job;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.git.batch.GitBatchJob;
+import com.git.framework.util.GitDateUtils;
+import com.git.schedule.common.BizException;
+
+/**
+ * <pre>
+ * job 服务统一实现基类规范
+ * </pre>
+ * @author 林凯<br>
+ * <b>mail</b> linkai@git.com.cn<br>
+ * <b>date</b> 2016年7月5日 下午3:22:45<br>
+ * @version 1.2.1
+ * 
+ * <pre>
+ * <b>修订记录</b><br>
+ * <b>版本号    日期     修改人  修改内容<b>
+ * V1.2.1 2016年7月5日 林凯    新建
+ * </pre>
+ */
+public abstract class CmsBaseBatchJob extends GitBatchJob {
+	
+	/**
+	 * 设置默认的系统来源为：01对公 02对私 03不区分
+	 */
+	public static final String SRC_SYSTEM = "03";
+	
+	@Override
+	@SuppressWarnings("rawtypes")
+	public String runJob() throws Exception {
+		/**
+		 * 返回备注消息
+		 */
+		String strReturn = "";
+		/**
+		 * 1.当 作业属性参数集合不为空
+		 */
+		if (super.getParamMap() != null) {
+			/**
+			 * a.获取临时承载变量
+			 */
+			Map<String, Object> paramMap = new HashMap<String, Object>();
+			Map strReturnMap = (HashMap) super.getParamMap();
+			/**
+			 * b.获取系统来源
+			 * 	 01：对公
+			 *   02：对私
+			 *   03：不区分
+			 */
+			String srcSystem = SRC_SYSTEM;
+			if(strReturnMap.get("SrcSystem") != null && !"".equals(strReturnMap.get("SrcSystem"))){
+				srcSystem= (String) strReturnMap.get("SrcSystem");
+			}
+			paramMap.put("i_src_system", srcSystem);
+			/**
+			 * c.获取批次编号
+			 */
+			String batchNo = (String) strReturnMap.get("BatchNo");
+			paramMap.put("batch_no", batchNo);
+			// 将批次编号转换为跑批日期
+			Date date = GitDateUtils.parseDate(batchNo,GitDateUtils.YYYYMMDD);
+			paramMap.put("i_input_date", date);
+			/**
+			 * d.获取存储过程名称
+			 */
+			String alisaName = (String) strReturnMap.get("AlisaName");
+			/**
+			 * e.执行业务逻辑操作
+			 */
+			logger.info(batchNo + "【" + srcSystem + "】【" + alisaName + "】开始执行...");
+			super.setTotalProgress(100);
+			super.setCurrentProgress(0);
+			callProcedure(paramMap);
+			super.setCurrentProgress(100);
+			strReturn = batchNo + "【" + srcSystem + "】【" + alisaName + "】执行完毕...";
+			logger.info(strReturn);
+		}
+		/**
+		 * 2.若作业对应的参数集合为空，则表明当前作业参数不完整
+		 */
+		else {
+			if (logger.isErrorEnabled()) {
+				logger.error("JOB FAILURE：" + super.getJobName() + "-->任务参数配置异常");
+			}
+			throw new BizException("JOB FAILURE：" + super.getJobName() + "-->任务参数配置异常");
+		}
+		return strReturn;
+	}
+
+	/**
+	 * 调用存储过程，传入系统来源、跑批编号和跑批日期
+	 * @param paramMap
+	 * @throws Exception
+	 */
+	public abstract void callProcedure(Map<String, Object> paramMap) throws Exception;
+}
+
