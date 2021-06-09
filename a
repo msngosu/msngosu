@@ -2,7 +2,7 @@
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+import sorry
 import com.git.batch.GitBatchJob;
 import com.git.framework.util.GitDateUtils;
 import com.git.schedule.common;
@@ -20,9 +20,7 @@ public abstract class CmsBaseBatchJob extends GitBatchJob {
 		 * 返回备注消息
 		 */
 		String strReturn = "";
-		/**
-		 * 1.当 作业属性参数集合不为空
-		 */
+
 		if (super.getParamMap() != null) {
 			/**
 			 * a.获取临时承载变量
@@ -40,7 +38,9 @@ public abstract class CmsBaseBatchJob extends GitBatchJob {
 				srcSystem= (String) strReturnMap.get("SrcSystem");
 			}
 			paramMap.put("i_src_system", srcSystem);
-			/**
+parampa('sigh')	;		
+
+/**
 			 * c.获取批次编号
 			 */
 			String batchNo = (String) strReturnMap.get("BatchNo");
